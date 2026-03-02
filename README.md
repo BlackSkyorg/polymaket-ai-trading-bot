@@ -9,7 +9,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git">
+  <a href="https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git">
     <img src="docs/images/cli.png" alt="Logo" width="466" height="262">
   </a>
 
@@ -18,14 +18,14 @@
   <p align="center">
     Trade autonomously on Polymarket using AI Agents
     <br />
-    <a href="https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git">View Demo</a>
+    <a href="https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git">View Demo</a>
     ·
-    <a href="https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -69,7 +69,7 @@ This project requires **Python 3.12+**.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git
+   git clone https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git
    cd poly-ai-trading-agent
    ```
 
@@ -653,9 +653,8 @@ Before making contributions, please:
 
 For questions, support, or inquiries:
 
-- **Twitter/X**: [@blacksky_jose](https://x.com/blacksky_jose)
 - **Telegram**: [@blacksky_jose](https://t.me/blacksky_jose)
-- **GitHub Issues**: [Open an issue](https://github.com/BlackSky-Jose/PolyMarket-AI-agent-trading.git/issues)
+- **GitHub Issues**: [Open an issue](https://github.com//blackskyorg//PolyMarket-AI-agent-trading.git/issues)
 
 Enjoy using the CLI application! If you encounter any issues, feel free to open an issue on the repository or reach out through the contact channels above.
 
