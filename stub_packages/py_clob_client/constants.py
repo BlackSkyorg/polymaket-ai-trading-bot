@@ -1,0 +1,3 @@
+AMOY = 80002
+POLYGON = 137
+BUY = "BUY"

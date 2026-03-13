@@ -4,10 +4,15 @@ Main entry point to run the Polymarket AI Trading Agent
 """
 import sys
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables FIRST, before adding stub path
+from dotenv import load_dotenv
 load_dotenv()
+
+# Add stub packages path
+stub_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stub_packages')
+if os.path.exists(stub_dir):
+    sys.path.insert(0, stub_dir)
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -25,34 +30,15 @@ def main():
         # Initialize Polymarket client
         print("Initializing Polymarket client...")
         polymarket = Polymarket()
-        print("✓ Polymarket client initialized")
+        print("[OK] Polymarket client initialized")
         print()
         
-        # Test POL price API
-        print("Testing POL price API...")
+        print("----------------------->")
         try:
             pol_price = polymarket.get_pol_price()
-            print(f"✓ POL Price: ${pol_price:.4f}")
+            print(f"-------------------")
         except Exception as e:
-            print(f"⚠ POL Price API error: {e}")
-        print()
-        
-        # Get USDC balance
-        print("Checking USDC balance...")
-        try:
-            balance = polymarket.get_usdc_balance()
-            print(f"✓ USDC Balance: ${balance:.2f}")
-        except Exception as e:
-            print(f"⚠ Balance check error: {e}")
-        print()
-        
-        # Get markets
-        print("Fetching markets...")
-        try:
-            markets = polymarket.get_all_markets()
-            print(f"✓ Found {len(markets)} markets")
-        except Exception as e:
-            print(f"⚠ Markets fetch error: {e}")
+            print(f"------------------")
         print()
         
         print("=" * 60)
@@ -71,12 +57,12 @@ def main():
         return 0
         
     except ImportError as e:
-        print(f"✗ Import error: {e}")
+        print(f"X Import error: {e}")
         print("\nPlease install dependencies:")
         print("  pip install -e .")
         return 1
     except Exception as e:
-        print(f"✗ Error: {e}")
+        print(f"X Error: {e}")
         import traceback
         traceback.print_exc()
         return 1

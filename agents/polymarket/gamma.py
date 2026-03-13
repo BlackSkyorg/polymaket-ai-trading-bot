@@ -1,12 +1,9 @@
 import httpx
 import json
-import logging
 from typing import Optional
 
 from agents.polymarket.polymarket import Polymarket
 from agents.utils.objects import Market, PolymarketEvent, ClobReward, Tag
-
-logger = logging.getLogger(__name__)
 class GammaMarketClient:
     def __init__(self):
         self.gamma_url = "https://gamma-api.polymarket.com"
@@ -38,13 +35,10 @@ class GammaMarketClient:
 
             return Market(**market_object)
         except Exception as err:
-            logger.error(f"[parse_market] Caught exception: {err}")
-            logger.debug(f"Exception while handling object: {market_object}")
             raise
 
     # Event parser for events nested under a markets api response
     def parse_nested_event(self, event_object: dict) -> PolymarketEvent:
-        logger.debug(f"[parse_nested_event] called with: {event_object}")
         try:
             if "tags" in event_object:
                 tags: list[Tag] = []
@@ -54,8 +48,6 @@ class GammaMarketClient:
 
             return PolymarketEvent(**event_object)
         except Exception as err:
-            logger.error(f"[parse_nested_event] Caught exception: {err}")
-            logger.debug(f"Exception while handling object: {event_object}")
             raise
 
     def parse_pydantic_event(self, event_object: dict) -> PolymarketEvent:
@@ -67,8 +59,6 @@ class GammaMarketClient:
                 event_object["tags"] = tags
             return PolymarketEvent(**event_object)
         except Exception as err:
-            logger.error(f"[parse_pydantic_event] Caught exception: {err}")
-            logger.debug(f"Exception while handling object: {event_object}")
             raise
 
     def get_markets(
@@ -93,7 +83,6 @@ class GammaMarketClient:
                     markets.append(self.parse_pydantic_market(market_object))
                 return markets
         else:
-            logger.error(f"Error response returned from API: HTTP {response.status_code}")
             response.raise_for_status()
             raise RuntimeError(f"API request failed with status {response.status_code}")
 
@@ -119,7 +108,6 @@ class GammaMarketClient:
                     events.append(self.parse_pydantic_event(market_event_obj))
                 return events
         else:
-            logger.error(f"Error response returned from API: HTTP {response.status_code}")
             response.raise_for_status()
             raise RuntimeError(f"API request failed with status {response.status_code}")
 
@@ -182,7 +170,6 @@ class GammaMarketClient:
 
     def get_market(self, market_id: int) -> dict:
         url = f"{self.gamma_markets_endpoint}/{market_id}"
-        logger.debug(f"Fetching market from: {url}")
         response = httpx.get(url)
         response.raise_for_status()
         return response.json()

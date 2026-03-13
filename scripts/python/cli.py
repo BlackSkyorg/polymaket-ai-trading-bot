@@ -1,4 +1,3 @@
-import logging
 import sys
 from typing import Optional
 
@@ -12,13 +11,6 @@ from agents.connectors.news import News
 from agents.application.trade import Trader
 from agents.application.executor import Executor
 from agents.application.creator import Creator
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
-)
 
 app = typer.Typer(help="Polymarket AI Trading Agent CLI")
 console = Console()

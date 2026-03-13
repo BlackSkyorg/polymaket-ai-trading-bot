@@ -1,10 +1,6 @@
-import logging
-
 from agents.application.executor import Executor as Agent
 from agents.polymarket.gamma import GammaMarketClient as Gamma
 from agents.polymarket.polymarket import Polymarket
-
-logger = logging.getLogger(__name__)
 
 
 class Creator:
@@ -23,24 +19,17 @@ class Creator:
         """
         try:
             events = self.polymarket.get_all_tradeable_events()
-            logger.info(f"1. FOUND {len(events)} EVENTS")
 
             filtered_events = self.agent.filter_events_with_rag(events)
-            logger.info(f"2. FILTERED {len(filtered_events)} EVENTS")
 
             markets = self.agent.map_filtered_events_to_markets(filtered_events)
-            logger.info(f"3. FOUND {len(markets)} MARKETS")
 
             filtered_markets = self.agent.filter_markets(markets)
-            logger.info(f"4. FILTERED {len(filtered_markets)} MARKETS")
 
             best_market = self.agent.source_best_market_to_create(filtered_markets)
-            logger.info(f"5. IDEA FOR NEW MARKET {best_market}")
             return best_market
 
         except Exception as e:
-            logger.error(f"Error in one_best_market: {e}", exc_info=True)
-            logger.info("Retrying...")
             self.one_best_market()
 
     def maintain_positions(self):

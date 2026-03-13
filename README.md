@@ -39,7 +39,7 @@ Polymarket Agents is a modern, open-source framework for building sophisticated 
 
 **Built with Python 3.12+** | **MIT Licensed** | **Production Ready**
 
-This code is free and publicly available under MIT License open source license ([terms of service](#terms-of-service))!
+This code is free and publicly available under MIT License open source license!
 
 ## Features
 
@@ -162,7 +162,30 @@ This project requires **Python 3.12+**.
    
    Before executing trades, ensure your Polygon wallet has sufficient USDC balance for trading.
 
+7. **Verify your setup**
+   
+   Run the project to verify everything is configured correctly:
+   
+   ```bash
+   python run.py
+   ```
+   
+   This will initialize the Polymarket client and confirm your environment is ready.
+
 ## Usage
+
+### Quick Start
+
+Run the project to initialize and verify your setup:
+
+```bash
+python run.py
+```
+
+This will:
+- Initialize the Polymarket client
+- Verify your environment configuration
+- Display available CLI commands
 
 ### Command Line Interface
 
@@ -493,7 +516,16 @@ python -m scripts.python.cli run-autonomous-trader
 5. Calculate the best trade
 6. Execute the trade (if enabled)
 
-### Direct Script Execution
+### Running the Project
+
+**Quick Start:**
+```bash
+python run.py
+```
+
+This initializes the Polymarket client and verifies your setup.
+
+**Direct Script Execution:**
 
 You can also run the trading script directly without the CLI:
 
@@ -502,6 +534,16 @@ python -m agents.application.trade
 ```
 
 This will execute the `one_best_trade()` method directly.
+
+**Create Markets:**
+
+To generate market ideas using AI:
+
+```bash
+python -m agents.application.creator
+```
+
+This will execute the `one_best_market()` method to generate market suggestions.
 
 ### Docker Deployment
 
@@ -620,9 +662,16 @@ Files for managing your local environment, server set-up to run the application 
 
 **`cli.py`** is the primary user interface for the repo. Users can run various commands to interact with the Polymarket API, retrieve relevant news articles, query local data, send data/prompts to LLMs, and execute trades in Polymarkets.
 
+**`run.py`** is the main entry point script that initializes the Polymarket client and verifies your environment setup.
+
 Commands follow this format:
 ```bash
 python -m scripts.python.cli <command_name> [options]
+```
+
+To quickly start the project:
+```bash
+python run.py
 ```
 
 ## Contributing

@@ -2,7 +2,6 @@ import os
 import json
 import ast
 import re
-import logging
 import math
 from typing import List, Dict, Any
 
@@ -14,8 +13,6 @@ from agents.connectors.chroma import PolymarketRAG as Chroma
 from agents.utils.objects import SimpleEvent, SimpleMarket
 from agents.application.prompts import Prompter
 from agents.polymarket.polymarket import Polymarket
-
-logger = logging.getLogger(__name__)
 
 def retain_keys(data, keys_to_retain):
     if isinstance(data, dict):
@@ -41,8 +38,6 @@ class Executor:
         self.token_limit = max_token_model.get(default_model, 128000)
         self.prompter = Prompter()
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        if not self.openai_api_key:
-            logger.warning("OPENAI_API_KEY not found in environment")
         self.llm = ChatOpenAI(
             model=default_model,
             temperature=0,
@@ -105,7 +100,6 @@ class Executor:
             return self.process_data_chunk(data1, data2, user_input)
         else:
             # If exceeding limit, process in chunks
-            logger.info(f'Total tokens {total_tokens} exceeding LLM capacity, splitting into chunks')
             group_size = (total_tokens // token_limit) + 1
             useful_keys = [
                 'id', 'questionID', 'description', 'liquidity', 'clobTokenIds',
@@ -134,7 +128,6 @@ class Executor:
 
     def filter_events_with_rag(self, events: "list[SimpleEvent]") -> str:
         prompt = self.prompter.filter_events()
-        logger.debug(f"Filtering events with RAG, prompt: {prompt[:100]}...")
         return self.chroma.events(events, prompt)
 
     def map_filtered_events_to_markets(
@@ -152,7 +145,6 @@ class Executor:
 
     def filter_markets(self, markets) -> "list[tuple]":
         prompt = self.prompter.filter_markets()
-        logger.debug(f"Filtering markets, prompt: {prompt[:100]}...")
         return self.chroma.markets(markets, prompt)
 
     def source_best_trade(self, market_object) -> str:
@@ -164,16 +156,12 @@ class Executor:
         description = market_document["page_content"]
 
         prompt = self.prompter.superforecaster(question, description, outcomes)
-        logger.debug("Getting superforecast prediction")
         result = self.llm.invoke(prompt)
         content = result.content
-        logger.debug(f"Superforecast result: {content[:200]}...")
 
         prompt = self.prompter.one_best_trade(content, outcomes, outcome_prices)
-        logger.debug("Determining best trade")
         result = self.llm.invoke(prompt)
         content = result.content
-        logger.debug(f"Best trade result: {content[:200]}...")
         return content
 
     def format_trade_prompt_for_execution(self, best_trade: str) -> float:
@@ -185,7 +173,6 @@ class Executor:
 
     def source_best_market_to_create(self, filtered_markets) -> str:
         prompt = self.prompter.create_new_market(filtered_markets)
-        logger.debug("Creating new market idea")
         result = self.llm.invoke(prompt)
         content = result.content
         return content
